@@ -2,6 +2,7 @@ package com.example.demo.config;
 
 import com.example.demo.jwt.JwtAccessDeniedHandler;
 import com.example.demo.jwt.JwtAuthenticationEntryPoint;
+import com.example.demo.jwt.JwtSecurityConfig;
 import com.example.demo.jwt.TokenProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,7 +16,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @EnableWebSecurity
-//@EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final TokenProvider tokenProvider;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
@@ -40,14 +41,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 .accessDeniedHandler(jwtAccessDeniedHandler)
 
-                .and()
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+//                .and()
+//                .sessionManagement()
+//                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
                 .and()
                 .authorizeRequests() //HttpServletRequest를 사용하는 요청들에 대한 접근 제한을 설정하겠다는 의미
-        //      .antMatchers("/api/hello").hasRole("ADMIN") //이에 해당하는 요청은 접근 허용
-                .antMatchers("/**").permitAll(); //나머자 요청들은 모두 인증
+                .antMatchers("/api/hello").hasRole("ADMIN") //이에 해당하는 요청은 접근 허용
+                .antMatchers("/api/**").permitAll() //나머자 요청들은 모두 인증
+
+                 .and()
+                .apply(new JwtSecurityConfig(tokenProvider));
     }
 
     @Override
