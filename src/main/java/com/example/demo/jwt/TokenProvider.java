@@ -1,11 +1,15 @@
 package com.example.demo.jwt;
 
+import com.example.demo.domain.entity.Token;
+import com.example.demo.repository.TokenRepository;
+import com.example.demo.repository.UserRepository;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -32,6 +36,14 @@ public class TokenProvider implements InitializingBean {
 
     private Key key;
 
+    @Autowired
+    private TokenRepository tokenRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    private Token token;
+
     public TokenProvider(
             @Value("${jwt.secret}") String secret,
             @Value("${jwt.token-validity-in-seconds}") long tokenValidityInSeconds) {
@@ -53,12 +65,33 @@ public class TokenProvider implements InitializingBean {
         long now = (new Date()).getTime();
         Date validity = new Date(now + this.tokenValidityInMilliseconds);
 
-        return Jwts.builder()
+        Jwts.builder()
                 .setSubject(authentication.getName())
+                .setIssuedAt(new Date(now))
                 .claim(AUTHORITIES_KEY, authorities)
                 .signWith(key, SignatureAlgorithm.HS512)
                 .setExpiration(validity)
                 .compact();
+
+//        Token token = Token.builder()
+//                .tokenName(Jwts.claims().toString())
+//                .user(userRepository.findByUsername(authentication.getName()))
+//                .createdDate(Jwts.claims().getIssuedAt())
+//                .build();
+//
+//        tokenRepository.save(token);
+//        System.out.println("로그인될때 이 메소드 타는지 확인");
+//        System.out.println("토큰 내용 이거 맞는지 확인"+Jwts.claims().toString());
+
+
+        return Jwts.builder()
+                .setSubject(authentication.getName())
+                .setIssuedAt(new Date(now))
+                .claim(AUTHORITIES_KEY, authorities)
+                .signWith(key, SignatureAlgorithm.HS512)
+                .setExpiration(validity)
+                .compact();
+
     }
 
     public Authentication getAuthentication(String token) {
