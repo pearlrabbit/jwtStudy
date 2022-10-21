@@ -57,29 +57,6 @@ public class UserService {
         return userRepository.save(user);
     }
 
-//    @Transactional
-//    public void login(LoginDto loginDto){
-//
-//        UsernamePasswordAuthenticationToken authenticationToken =
-//                new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword());
-//
-//        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-//        SecurityContextHolder.getContext().setAuthentication(authentication);
-//
-//        String jwt = tokenProvider.createToken(authentication);
-//
-//        Token token = Token.builder()
-//                    .tokenName(jwt)
-//                    .build();
-//
-//        System.out.println(token.getTokenName());
-//        System.out.println(token.getTokenId());
-//
-//        if(token!=null) {
-//            tokenRepository.save(token);
-//        }
-//    }
-
     @Transactional(readOnly = true)
     public Optional<User> getUserWithAuthorities(String username) {
         return userRepository.findOneWithAuthoritiesByUsername(username);

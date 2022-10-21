@@ -14,6 +14,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
@@ -50,8 +51,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/hello").hasRole("ADMIN") //이에 해당하는 요청은 접근 허용
                 .antMatchers("/api/**").permitAll() //나머자 요청들은 모두 인증
 
-                 .and()
-                .apply(new JwtSecurityConfig(tokenProvider));
+                .and()
+                .apply(new JwtSecurityConfig(tokenProvider))
+
+                .and() // 로그아웃 설정
+                .logout()
+                .logoutUrl("/logout")
+                //.logoutSuccessUrl("/main")
+                .invalidateHttpSession(true);
     }
 
     @Override

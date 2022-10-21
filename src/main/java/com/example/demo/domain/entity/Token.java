@@ -23,6 +23,9 @@ public class Token {
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdDate = new Date();
 
+//    @Temporal(TemporalType.TIMESTAMP)
+//    private Date expiredDate;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = true)
     private User user;
