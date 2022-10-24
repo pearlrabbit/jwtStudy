@@ -3,6 +3,7 @@ package com.example.demo.jwt;
 import com.example.demo.domain.entity.Token;
 import com.example.demo.repository.TokenRepository;
 import com.example.demo.repository.UserRepository;
+import com.example.demo.service.AuthService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -15,13 +16,19 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpServletRequest;
+import java.io.UnsupportedEncodingException;
 import java.security.Key;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
@@ -65,25 +72,6 @@ public class TokenProvider implements InitializingBean {
         long now = (new Date()).getTime();
         Date validity = new Date(now + this.tokenValidityInMilliseconds);
 
-        Jwts.builder()
-                .setSubject(authentication.getName())
-                .setIssuedAt(new Date(now))
-                .claim(AUTHORITIES_KEY, authorities)
-                .signWith(key, SignatureAlgorithm.HS512)
-                .setExpiration(validity)
-                .compact();
-
-//        Token token = Token.builder()
-//                .tokenName(Jwts.claims().toString())
-//                .user(userRepository.findByUsername(authentication.getName()))
-//                .createdDate(Jwts.claims().getIssuedAt())
-//                .build();
-//
-//        tokenRepository.save(token);
-//        System.out.println("로그인될때 이 메소드 타는지 확인");
-//        System.out.println("토큰 내용 이거 맞는지 확인"+Jwts.claims().toString());
-
-
         return Jwts.builder()
                 .setSubject(authentication.getName())
                 .setIssuedAt(new Date(now))
@@ -120,6 +108,8 @@ public class TokenProvider implements InitializingBean {
             logger.info("잘못된 JWT 서명입니다.");
         } catch (ExpiredJwtException e) {
             logger.info("만료된 JWT 토큰입니다.");
+            SecurityContextHolder.clearContext();
+            //그리고 여기서 redirection login페이지 주기
         } catch (UnsupportedJwtException e) {
             logger.info("지원되지 않는 JWT 토큰입니다.");
         } catch (IllegalArgumentException e) {
@@ -127,5 +117,15 @@ public class TokenProvider implements InitializingBean {
         }
         return false;
     }
+
+    @ExceptionHandler(ExpiredJwtException.class)
+    @ResponseBody
+    public String authExceptionResolver(ExpiredJwtException e) {
+        logger.info("만료된 jwt토큰입니다.");
+        SecurityContextHolder.clearContext();
+        logger.info("로그인리다이렉트 오나요");//여기 안옴 나중에 여기 뜨게 하기!(아마 프론트에서 할듯)
+        return "redirect:/api/login";
+    }
+
 }
 

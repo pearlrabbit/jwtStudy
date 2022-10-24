@@ -28,6 +28,7 @@ public class UserController {
     @GetMapping("/user")
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     public ResponseEntity<User> getMyUserInfo() {
+        System.out.println("여기오나요");
         return ResponseEntity.ok(userService.getMyUserWithAuthorities().get());
     }
 

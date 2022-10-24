@@ -8,6 +8,8 @@ import com.example.demo.jwt.JwtFilter;
 import com.example.demo.jwt.TokenProvider;
 import com.example.demo.repository.TokenRepository;
 import com.example.demo.repository.UserRepository;
+import com.example.demo.service.AuthService;
+import io.jsonwebtoken.Jwt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -21,12 +23,18 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.Transient;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.text.SimpleDateFormat;
+import java.time.*;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+
 
 @RestController
 @RequestMapping("/api")
@@ -39,6 +47,9 @@ public class AuthController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Value("${jwt.token-validity-in-seconds}")
+    long tokenValidityInSeconds;
 
     public AuthController(TokenProvider tokenProvider, AuthenticationManagerBuilder authenticationManagerBuilder) {
         this.tokenProvider = tokenProvider;
@@ -57,10 +68,18 @@ public class AuthController {
         String jwt = tokenProvider.createToken(authentication);
 
         Date now = new Date();
-        Token token = new Token();
-        token.setUser(userRepository.findByUsername(authentication.getName()));
-        token.setTokenName(jwt);
-        token.setCreatedDate(now);
+
+        LocalTime localTime = LocalTime.now().plusSeconds(tokenValidityInSeconds);
+        LocalDateTime localDateTime = localTime.atDate(LocalDate.now());
+        Instant instant = localDateTime.atZone(ZoneId.systemDefault()).toInstant();
+        Date date = Date.from(instant);
+
+        Token token = Token.builder()
+                .user(userRepository.findByUsername(authentication.getName()))
+                .tokenName(jwt)
+                .createdDate(now)
+                .expiredDate(date)
+                .build();
 
         tokenRepository.save(token);
 
@@ -71,12 +90,14 @@ public class AuthController {
 
     }
 
-    @GetMapping("/logout")
-    public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication){
-        if(authentication.isAuthenticated()==false) {
-            new SecurityContextLogoutHandler().logout(request, response, authentication);
-            System.out.println("로그아웃 성공");
-        }
-
-    }
+//    @PostMapping("/logout")
+//    public ResponseEntity logout(HttpServletRequest request) {
+//        String AccessToken = request.getHeader("Authorization");
+//        String username = authService.verifyToken(AccessToken);
+//        //redisService.insertAccessToken(AccessToken);
+//        tokenRepository.deleteByUsername(username);
+//        SecurityContextHolder.clearContext();
+//
+//        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+//    }
 }

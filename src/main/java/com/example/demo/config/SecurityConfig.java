@@ -1,9 +1,6 @@
 package com.example.demo.config;
 
-import com.example.demo.jwt.JwtAccessDeniedHandler;
-import com.example.demo.jwt.JwtAuthenticationEntryPoint;
-import com.example.demo.jwt.JwtSecurityConfig;
-import com.example.demo.jwt.TokenProvider;
+import com.example.demo.jwt.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -14,6 +11,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @EnableWebSecurity
@@ -48,17 +46,21 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
                 .and()
                 .authorizeRequests() //HttpServletRequest를 사용하는 요청들에 대한 접근 제한을 설정하겠다는 의미
-                .antMatchers("/api/hello").hasRole("ADMIN") //이에 해당하는 요청은 접근 허용
-                .antMatchers("/api/**").permitAll() //나머자 요청들은 모두 인증
+                .antMatchers("/api/admin").hasRole("ADMIN") //이에 해당하는 요청은 접근 허용
+                //.antMatchers("/api/user").hasAnyRole()
+                .antMatchers("/api/signup","/api/login").permitAll() //나머자 요청들은 모두 ok
 
                 .and()
-                .apply(new JwtSecurityConfig(tokenProvider))
+                .apply(new JwtSecurityConfig(tokenProvider));
 
-                .and() // 로그아웃 설정
-                .logout()
-                .logoutUrl("/logout")
-                //.logoutSuccessUrl("/main")
-                .invalidateHttpSession(true);
+//                .and() // 로그아웃 설정
+//                .logout()
+//                .logoutUrl("/")
+//                //.logoutSuccessUrl("/main")
+//                .invalidateHttpSession(true);
+
+        //http.addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter.class);
+
     }
 
     @Override
