@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.example.demo.domain.entity.Token;
 import com.example.demo.domain.entity.User;
 import com.example.demo.dto.LoginDto;
@@ -9,6 +10,7 @@ import com.example.demo.jwt.TokenProvider;
 import com.example.demo.repository.TokenRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.service.AuthService;
+import com.example.demo.service.UserService;
 import io.jsonwebtoken.Jwt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,6 +49,12 @@ public class AuthController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private AuthService authService;
+
+    @Autowired
+    private UserService userService;
 
     @Value("${jwt.token-validity-in-seconds}")
     long tokenValidityInSeconds;
@@ -90,14 +98,21 @@ public class AuthController {
 
     }
 
-//    @PostMapping("/logout")
-//    public ResponseEntity logout(HttpServletRequest request) {
-//        String AccessToken = request.getHeader("Authorization");
+    @PostMapping("/logout")
+    public void logout(HttpServletRequest request) {
+        String token = request.getHeader("Authorization");
+        DecodedJWT decodedToken=authService.getDecodedToken(token);
 //        String username = authService.verifyToken(AccessToken);
 //        //redisService.insertAccessToken(AccessToken);
 //        tokenRepository.deleteByUsername(username);
 //        SecurityContextHolder.clearContext();
 //
 //        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-//    }
+
+        userService.logout();
+        authService.deleteToken(decodedToken.getToken());
+        SecurityContextHolder.getContext().setAuthentication(null);
+        System.out.println("로그아웃 한 나는 누구인가요 :"+SecurityContextHolder.getContext().toString());
+        //그럼 이 때 리다이렉션으로 홈화면으로 이동하기
+    }
 }

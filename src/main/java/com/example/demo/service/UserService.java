@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.example.demo.domain.entity.Authority;
 import com.example.demo.domain.entity.Token;
 import com.example.demo.domain.entity.User;
@@ -11,6 +12,7 @@ import com.example.demo.repository.UserRepository;
 import com.example.demo.util.SecurityUtil;
 import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.Jwts;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.OAuth2ResourceServerProperties;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -26,6 +28,7 @@ import java.util.Optional;
 
 @Service
 public class UserService {
+    @Autowired
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private AuthenticationManagerBuilder authenticationManagerBuilder;
@@ -58,6 +61,21 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    @Transactional
+    public void logout(){
+        SecurityContextHolder.clearContext();
+        System.out.println("로그아웃 성공");
+    }
+
+    @Transactional
+    public User findByTokens(Token token){
+        return userRepository.findByTokens(token);
+    }
+
+    @Transactional
+    public User findByUsername(String username){
+        return userRepository.findByUsername(username);
+    }
 
 
     @Transactional(readOnly = true)

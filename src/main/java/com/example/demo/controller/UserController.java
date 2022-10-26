@@ -26,10 +26,10 @@ public class UserController {
     }
 
     @GetMapping("/user")
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    public ResponseEntity<User> getMyUserInfo() {
+    @PreAuthorize("hasAnyRole('USER')")
+    public String getMyUserInfo() {
         System.out.println("여기오나요");
-        return ResponseEntity.ok(userService.getMyUserWithAuthorities().get());
+        return "나는 토큰이 유효한 유저입니다.";
     }
 
     @GetMapping("/user/{username}")

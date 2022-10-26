@@ -51,6 +51,8 @@ public class TokenProvider implements InitializingBean {
 
     private Token token;
 
+    private AuthService authService;
+
     public TokenProvider(
             @Value("${jwt.secret}") String secret,
             @Value("${jwt.token-validity-in-seconds}") long tokenValidityInSeconds) {
@@ -106,9 +108,12 @@ public class TokenProvider implements InitializingBean {
             return true;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
             logger.info("잘못된 JWT 서명입니다.");
+            //없는 토큰일 때
+            //여기는 다시 로그인 페이지로 이동하게 하기
         } catch (ExpiredJwtException e) {
             logger.info("만료된 JWT 토큰입니다.");
             SecurityContextHolder.clearContext();
+            authService.deleteToken(token);
             //그리고 여기서 redirection login페이지 주기
         } catch (UnsupportedJwtException e) {
             logger.info("지원되지 않는 JWT 토큰입니다.");
@@ -125,6 +130,17 @@ public class TokenProvider implements InitializingBean {
         SecurityContextHolder.clearContext();
         logger.info("로그인리다이렉트 오나요");//여기 안옴 나중에 여기 뜨게 하기!(아마 프론트에서 할듯)
         return "redirect:/api/login";
+    }
+
+    public boolean isDbTokenInvalid(Token token){
+        try{
+            if(token.getExpiredDate().after(new Date())){
+
+            }
+        }catch (ExpiredJwtException e){
+
+        }
+        return false;
     }
 
 }

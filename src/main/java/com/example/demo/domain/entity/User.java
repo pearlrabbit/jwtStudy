@@ -49,6 +49,10 @@ public class User {
         private Set<Authority> authorities;
 
         @JsonBackReference
-        @OneToMany(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+        @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
         private Set<Token> tokens;
+
+        @JsonBackReference
+        @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+        private Set<Article> articles;
 }
