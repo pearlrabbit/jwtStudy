@@ -2,17 +2,16 @@ package com.example.demo.config;
 
 import com.example.demo.jwt.*;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.filter.CorsFilter;
 
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true) // @PreAuthorize 사용을 위함
@@ -20,15 +19,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final TokenProvider tokenProvider;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
+    private final RedisTemplate redisTemplate;
 
     public SecurityConfig(
             TokenProvider tokenProvider,
             JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
-            JwtAccessDeniedHandler jwtAccessDeniedHandler
-    ) {
+            JwtAccessDeniedHandler jwtAccessDeniedHandler,
+            RedisTemplate redisTemplate) {
         this.tokenProvider = tokenProvider;
         this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
         this.jwtAccessDeniedHandler = jwtAccessDeniedHandler;
+        this.redisTemplate = redisTemplate;
     }
 
     @Override
@@ -40,10 +41,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 .accessDeniedHandler(jwtAccessDeniedHandler)
 
-//                .and()
-//                .sessionManagement()
-//                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-
                 .and()
                 .authorizeRequests() //HttpServletRequest를 사용하는 요청들에 대한 접근 제한을 설정하겠다는 의미
                 .antMatchers("/api/admin").hasAnyAuthority("ROLE_ADMIN")
@@ -51,7 +48,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/signup","/api/login").permitAll() //나머자 요청들은 모두 ok
 
                 .and()
-                .apply(new JwtSecurityConfig(tokenProvider))
+                .apply(new JwtSecurityConfig(tokenProvider, redisTemplate))
 
                 .and() // 로그아웃 설정
                 .logout()
@@ -59,7 +56,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 //.logoutSuccessUrl("/main")
                 .invalidateHttpSession(true);
 
-        //http.addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter.class);
+        JwtFilter customFilter = new JwtFilter(tokenProvider, redisTemplate);
+        http.addFilterBefore(customFilter, UsernamePasswordAuthenticationFilter.class);
+        //http.addFilterAfter(jwtFilter, CorsFilter.class);
 
     }
 

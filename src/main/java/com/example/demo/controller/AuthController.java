@@ -82,8 +82,10 @@ public class AuthController {
         Instant instant = localDateTime.atZone(ZoneId.systemDefault()).toInstant();
         Date date = Date.from(instant);
 
+        System.out.println(userRepository.findByUsername(authentication.getName()).get()==null);
+
         Token token = Token.builder()
-                .user(userRepository.findByUsername(authentication.getName()))
+                .user(userRepository.findByUsername(authentication.getName()).get())
                 .tokenName(jwt)
                 .createdDate(now)
                 .expiredDate(date)
@@ -98,21 +100,13 @@ public class AuthController {
 
     }
 
-    @PostMapping("/logout")
+    @PostMapping("/user/logout")
     public void logout(HttpServletRequest request) {
         String token = request.getHeader("Authorization");
         DecodedJWT decodedToken=authService.getDecodedToken(token);
-//        String username = authService.verifyToken(AccessToken);
-//        //redisService.insertAccessToken(AccessToken);
-//        tokenRepository.deleteByUsername(username);
-//        SecurityContextHolder.clearContext();
-//
-//        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-
-        userService.logout();
-        authService.deleteToken(decodedToken.getToken());
+        authService.logout(token);
         SecurityContextHolder.getContext().setAuthentication(null);
-        System.out.println("로그아웃 한 나는 누구인가요 :"+SecurityContextHolder.getContext().toString());
-        //그럼 이 때 리다이렉션으로 홈화면으로 이동하기
+//        System.out.println("로그아웃 한 나는 누구인가요 :"+SecurityContextHolder.getContext().toString());
+//        그럼 이 때 리다이렉션으로 홈화면으로 이동하기
     }
 }

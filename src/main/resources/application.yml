@@ -3,6 +3,11 @@ spring:
     url: jdbc:mysql://localhost:3306/DockerTest?useSSL=false&allowPublicKeyRetrieval=true
     username: root
     password: 1234
+  redis:
+    host: localhost
+    port: 6379
+  main:
+    allow-circular-references: true
 
   jpa:
     hibernate:
