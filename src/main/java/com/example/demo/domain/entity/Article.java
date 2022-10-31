@@ -55,7 +55,6 @@ public class Article {
     public static Article updateArticle (Article article, String title, String content) {
         article.title = title;
         article.content = content;
-
         return article;
     }
 

@@ -79,19 +79,12 @@ public class AuthService {
         Authentication authentication = tokenProvider.getAuthentication(token1);
 
         // 3. DB에 저장된 Refresh Token 제거
-//        Long userId = Long.parseLong(authentication.getName());
-//        System.out.println("=============================================");
-//        System.out.println(userId);
-
         Token token2=tokenRepository.findByUser(userRepository.findByUsername(authentication.getName()).get());
         tokenRepository.deleteById(token2.getTokenId());
 
         // 4. Access Token blacklist에 등록하여 만료시키기
         // 해당 엑세스 토큰의 남은 유효시간을 얻음
         Long expiration = tokenProvider.getExpiration(token1);
-//        System.out.println("authservice 여기까지 오는지 확인");
-//        System.out.println("남은 유효시간은 아래와 같습니다.");
-//        System.out.println(expiration);
         redisUtil.setBlackList(token1, "logout", expiration, TimeUnit.MILLISECONDS);
         //redisTemplate.opsForValue().set(token1, "logout", expiration, TimeUnit.MILLISECONDS);
 

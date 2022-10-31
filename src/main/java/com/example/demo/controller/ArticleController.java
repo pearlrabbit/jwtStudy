@@ -48,13 +48,32 @@ public class ArticleController {
         return ResponseEntity.ok(articleService.postArticle(request.getTitle(), request.getContent(), request.getBoardId()));
     }
 
+    @PostMapping("/write/notice")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<ArticleResponseDto> createArticleNotice(@RequestBody CreateArticleRequestDto request) {
+        return ResponseEntity.ok(articleService.postArticle(request.getTitle(), request.getContent(), request.getBoardId()));
+    }
+
     @GetMapping("/update")
     public ResponseEntity<ArticleResponseDto> getChangeArticle(@RequestParam(name = "id") Long id) {
         return ResponseEntity.ok(articleService.oneArticle((id)));
     }
 
+    @GetMapping("/update/notice")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<ArticleResponseDto> getChangeArticleNotice(@RequestParam(name = "id") Long id){
+        return ResponseEntity.ok(articleService.oneArticle(id));
+    }
+
     @PutMapping("/updateOk")
     public ResponseEntity<ArticleResponseDto> putChangeArticle(@RequestBody UpdateArticleRequestDto request) {
+        return ResponseEntity.ok(articleService.changeArticle(
+                request.getId(), request.getTitle(), request.getContent()));
+    }
+
+    @PutMapping("/updateOK/notice")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<ArticleResponseDto> putChangeArticleNotice(@RequestParam UpdateArticleRequestDto request){
         return ResponseEntity.ok(articleService.changeArticle(
                 request.getId(), request.getTitle(), request.getContent()));
     }
