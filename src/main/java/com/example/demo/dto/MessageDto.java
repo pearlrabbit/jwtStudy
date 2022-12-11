@@ -2,12 +2,11 @@ package com.example.demo.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter@Setter
+@Getter
+@Setter
 @AllArgsConstructor
-@NoArgsConstructor
-public class MessageResponse {
-    String message;
+public class MessageDto {
+    private String msg;
 }

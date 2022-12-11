@@ -3,7 +3,9 @@ package com.example.demo.service;
 import com.example.demo.domain.entity.Token;
 import com.example.demo.repository.TokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+@Service
 public class TokenService {
     //@Autowired
     private TokenRepository tokenRepository;
